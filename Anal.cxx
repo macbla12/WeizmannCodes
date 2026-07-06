@@ -1,12 +1,7 @@
 void Anal()
 {
 
-    double FcalBoundry=0.20;
-
-
-
-    Float_t MuonMass=0.1056583755;
-    Float_t ElectronMass=0.00051099895;
+    double FcalBoundry=0.175;
 
     TString File ="data.root"; 
     TChain *mychain = new TChain("Z_analysis");
@@ -63,6 +58,14 @@ void Anal()
     int eventID=0;
     double Centrality[]={299.736, 277.788, 262.923, 251.217, 241.358, 232.613, 224.684, 217.391, 210.599, 204.217, 198.159, 192.374, 186.851, 181.527, 176.384, 171.405, 166.613, 161.958, 157.427, 153.033};
     double Nparticipates[]={27.88, 26.96, 26.37, 25.86, 25.39, 24.93, 24.49, 24.04, 23.60, 23.15, 21.80, 19.52};
+    double NDeltaparticipates[]={0.23368, 0.31184, 0.35184, 0.38368, 0.41184, 0.45184, 0.47184, 0.51000, 0.53184, 0.57000, 0.34184, 0.51000};
+
+    double Ncollisions[]={45.90, 42.54, 40.67, 39.17, 37.86, 36.65, 35.51, 34.41, 33.35, 32.31, 34.45,29.34};
+    double NDeltacollisions[]={0.23368, 0.31184, 0.35184, 0.38368, 0.41184, 0.45184, 0.47184, 0.51000, 0.53184, 0.57000, 0.51000, 0.63184};
+
+    double TAA[]={0.6750, 0.6255, 0.5981, 0.5761, 0.5567, 0.5390, 0.5222, 0.5061, 0.4904, 0.4752, 0.5066, 0.4314};
+    double DeltaTAA[]={0.05891, 0.05143, 0.05317, 0.05232, 0.05144, 0.05056, 0.04974, 0.04853, 0.04736, 0.04609, 0.04861, 0.04264};
+
     double Scaling[]={0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,};
     double SumParticipatesAllEvents=0,EventPassed=0;
     int MaxBin=size(Centrality);
@@ -78,7 +81,7 @@ void Anal()
 
         FCAL_hist->Fill(FCAL[0]);
 
-        if(ZDC_CSide[0]<0.001 && ZDC_ASide[0]<0.001 )
+        if(ZDC_CSide[0]<0.001 && ZDC_ASide[0]<0.001)
         {
             FCAL_ZeroZDC_hist->Fill(FCAL[0]);
             if(FCAL[0]>FcalBoundry)
@@ -99,18 +102,30 @@ void Anal()
     }
     cout<<endl;
 
-    double Average=0;
+    double AverageParticipates=0, AverageParticipatesDeltaSq=0,AverageCollisions=0, AverageCollisionsDeltaSq=0,AverageTAA=0, AverageTAADeltaSq=0;
     for(int bin=0;bin<size(Scaling);bin++)
     {
         Scaling[bin]/=EventPassed;
         cout<<Scaling[bin]*100<<"%"<<endl;
-        Average+=Scaling[bin]*Nparticipates[bin];
+        AverageParticipates+=Scaling[bin]*Nparticipates[bin];
+        AverageParticipatesDeltaSq += (Scaling[bin] * Scaling[bin]) * (NDeltaparticipates[bin] * NDeltaparticipates[bin]);
+
+        AverageCollisions+=Scaling[bin]*Ncollisions[bin];
+        AverageCollisionsDeltaSq += (Scaling[bin] * Scaling[bin]) * (NDeltacollisions[bin] * NDeltacollisions[bin]);
+
+        AverageTAA+=Scaling[bin]*TAA[bin];
+        AverageTAADeltaSq += (Scaling[bin] * Scaling[bin]) * (DeltaTAA[bin] * DeltaTAA[bin]);
     }
-    
+    double AverageParticpatesDelta = sqrt(AverageParticipatesDeltaSq);
+    double AverageCollisionsDelta = sqrt(AverageCollisionsDeltaSq);
+    double AverageTAADelta= sqrt(AverageTAADeltaSq);
+
     cout<<endl;
     cout<<"End of Analysis"<<endl;
-    cout<<"Integral Ratio: "<<FCAL_ZeroZDC_hist->Integral(29,70)/FCAL_hist->Integral(29,70)<<endl;
-    cout<<"Average Participates: "<<Average<<endl;
+    cout<<"Integral Ratio: "<<FCAL_ZeroZDC_hist->Integral(FCAL_ZeroZDC_hist->FindBin(FcalBoundry),70)/FCAL_hist->Integral(FCAL_hist->FindBin(FcalBoundry),70)<<endl;
+    cout<<"Average Participates: "<<AverageParticipates<< " +/- " << AverageParticpatesDelta <<endl;
+    cout<<"Average Collisions: "<<AverageCollisions<< " +/- " << AverageCollisionsDelta <<endl;
+    cout<<"Average TAA: "<<AverageTAA<< " +/- " << AverageTAADelta <<endl;
 
     ZOutput->cd();
     ZDC_CSide_hist->Write();
