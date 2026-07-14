@@ -1,25 +1,25 @@
-void Anal()
+void AnalNeNe()
 {
 
-    double FcalBoundary=0.160;
+    double FcalBoundary=0.200;
     
-    TString File ="Files/dataOOwithTracks.root"; 
-    double Centrality[]={299.736, 277.788, 262.923, 251.217, 241.358, 232.613, 224.684, 217.391, 210.599, 204.217, 198.159, 192.374, 186.851, 181.527, 176.384, 171.405, 166.613, 161.958, 157.427, 153.033};
+    TString File ="Files/dataNeNewithTracks.root"; 
+    double Centrality[]={361.976, 335.830, 318.076, 303.987, 291.993, 281.363, 271.721, 262.816, 254.466, 246.593, 239.110, 231.954, 225.090, 218.477, 212.087, 205.919, 199.934, 194.133, 188.504, 183.035};
     
-    double Nparticipates[]={27.88, 26.96, 26.37, 25.86, 25.39, 24.93, 24.49, 24.04, 23.60, 23.15, 21.80, 19.52};
-    double NDeltaparticipates[]={0.23368, 0.31184, 0.35184, 0.38368, 0.41184, 0.45184, 0.47184, 0.51000, 0.53184, 0.57000, 0.63184,0.71000};
+    double Nparticipates[]={34.71, 33.55, 32.81, 32.18, 31.59, 31.02, 30.46, 29.90, 29.34, 28.78, 27.05, 24.15};
+    double NDeltaparticipates[]={0.11276, 0.18552, 0.23414, 0.26276, 0.28138, 0.30000, 0.31000, 0.32138, 0.32276, 0.32276, 0.31690, 0.26242};
 
-    double Ncollisions[]={45.90, 42.54, 40.67, 39.17, 37.86, 36.65, 35.51, 34.41, 33.35, 32.31, 29.34,24.70};
-    double NDeltacollisions[]={4.00736, 3.48704, 3.61552, 3.56184, 3.49368, 3.43552, 3.38184, 3.30736, 3.21656, 3.13576, 2.89968, 2.70496};
+    double Ncollisions[]={63.12, 58.07, 55.37, 53.22, 51.35, 49.64, 48.03, 46.49, 44.99, 43.53, 39.35, 32.90};
+    double NDeltacollisions[]={4.00736, 3.48704, 3.61552, 3.56184, 3.49368, 3.43552, 3.38184, 3.30736, 2.89968, 2.70496};
 
-    double TAA[]={0.6750, 0.6255, 0.5981, 0.5761, 0.5567, 0.5390, 0.5222, 0.5061, 0.4904, 0.4752, 0.4314, 0.3633};
-    double DeltaTAA[]={0.05891, 0.05143, 0.05317, 0.05232, 0.05144, 0.05056, 0.04974, 0.04853, 0.04736, 0.04609, 0.04264,0.03963};
+    double TAA[]={0.9283, 0.8540, 0.8142, 0.7827, 0.7552, 0.7300, 0.7063, 0.6836, 0.6616, 0.6402, 0.5787, 0.4838};
+    double DeltaTAA[]={0.02621, 0.02417, 0.02328, 0.02255, 0.02306, 0.02318, 0.02322, 0.02304, 0.02271, 0.02227, 0.02044, 0.01607};
     
     TChain *mychain = new TChain("Z_analysis");
         mychain->Add(File);
     TTreeReader tree_reader(mychain);
 
-    TFile *Output = new TFile("Plots/FCaL-Centrality.root","RECREATE");
+    TFile *Output = new TFile("Plots/FCaL-Centrality-NeNe.root","RECREATE");
 
 
     TTreeReaderArray<int> NTracks(tree_reader, "ntracks");
@@ -121,7 +121,7 @@ void Anal()
 
         //if(LumiBlock[0]<1100) continue;
         
-        if(FCAL[0]<0.020215) continue;
+        if(FCAL[0]<0.020983) continue;
 
 
         FCAL_hist->Fill(FCAL[0]);
@@ -169,7 +169,7 @@ void Anal()
     for(int bin=0;bin<size(Scaling);bin++)
     {
         Scaling[bin]/=EventPassed;
-        cout<<bin<<" Bin with "<<Scaling[bin]*100<<"%"<<endl;
+        cout<<bin+1<<" Bin with "<<Scaling[bin]*100<<"%"<<endl;
         AverageParticipates+=Scaling[bin]*Nparticipates[bin];
         AverageParticipatesDeltaSq += (Scaling[bin] * Scaling[bin]) * (NDeltaparticipates[bin] * NDeltaparticipates[bin]);
 
@@ -191,7 +191,7 @@ void Anal()
 
     double TrackEfficiency=1;
     //double EtaCut= 0.21; //abs(eta)<0.5
-    double FullSpectrumNparicipates=12.5;
+    double FullSpectrumNparicipates=19.45;
 
     double All_mean_dn_deta = (HILooseTrackAll) / (CountFullsepctrum*TrackEfficiency); 
     double final_value_All = All_mean_dn_deta / FullSpectrumNparicipates;

@@ -3,7 +3,7 @@ import pandas as pd
 
 
 
-df = pd.read_csv("Files/dndeta.csv", names=['Participates', 'Values'])
+df = pd.read_csv("Files/dndetaNeNe.csv", names=['Participates', 'Values'])
 
 weights = np.repeat([1.0, 5.0], [5, 15])
 
@@ -19,5 +19,5 @@ average = sum_value / sum_weights
 average_part = sum_participates / 80
 
 print(sum_participates)
-print(f"Average: {average/12.47} with {average_part} Participates")
+print(f"Average: {average/average_part} with {average_part} Participates")
 
