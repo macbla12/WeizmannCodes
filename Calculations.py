@@ -20,4 +20,3 @@ average_part = sum_participates / 80
 
 print(sum_participates)
 print(f"Average: {average/average_part} with {average_part} Participates")
-

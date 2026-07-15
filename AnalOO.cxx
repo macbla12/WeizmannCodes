@@ -14,6 +14,11 @@ void AnalOO()
 
     double TAA[]={0.6750, 0.6255, 0.5981, 0.5761, 0.5567, 0.5390, 0.5222, 0.5061, 0.4904, 0.4752, 0.4314, 0.3633};
     double DeltaTAA[]={0.05891, 0.05143, 0.05317, 0.05232, 0.05144, 0.05056, 0.04974, 0.04853, 0.04736, 0.04609, 0.04264,0.03963};
+
+    double Extrapolation[]={1.364, 1.358, 1.359, 1.367, 1.370, 1.361, 1.379, 1.375, 1.400, 1.378, 1.381, 1.400, 1.398, 1.388, 1.403, 1.469, 1.536, 1.572, 1.611, 1.519};
+
+    TFile *file2 = TFile::Open("Files/OO_eff005.root");
+    TH1F *h_eff = (TH1F*)file2->Get("OO_eff005"); 
     
     TChain *mychain = new TChain("Z_analysis");
         mychain->Add(File);
@@ -24,6 +29,7 @@ void AnalOO()
 
     TTreeReaderArray<int> NTracks(tree_reader, "ntracks");
     TTreeReaderArray<float> TrackEta(tree_reader, "trk_eta");
+    TTreeReaderArray<float> TrackPt(tree_reader, "trk_pt");
     TTreeReaderArray<vector<int>> TrackQuality(tree_reader, "trk_qualities");
     TTreeReaderArray<float> TrackD0(tree_reader, "trk_d0");
     TTreeReaderArray<float> TrackZ0(tree_reader, "trk_z0");
@@ -72,41 +78,36 @@ void AnalOO()
         if(i==11) FCAL_Bining->GetXaxis()->SetBinLabel(i + 1, "15-20%");
     }
 
+
+    TF1* pt_dep_d0_func = new TF1("pt_dep_d0", "0.14+ 0.24/x+(1.5e-04)*x", 0, 500); 
+
+    double trkPtBins_wguard[] = {0.1, 0.2, 0.31, 0.407, 0.5, 0.575, 0.66, 0.755, 0.86, 0.999, 1.13, 1.3, 1.5, 1.7, 1.95, 2.25, 2.57, 2.95, 3.35, 3.87, 4.45, 5.1, 5.85, 6.7, 
+                                7.65, 8.8, 10, 11.5, 13.2, 15.1, 17.3, 20, 23, 26, 30, 37.5, 47.5, 60, 75, 95, 120, 150, 190, 240, 290, 350};
+
+
     Long64_t total_events = mychain->GetEntries();
     cout<<"============================="<<endl;
     cout<<"Starting Analysis"<<endl;
     double Scaling[]={0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,};
     int eventID=0;
     double SumParticipatesAllEvents=0,EventPassed=0,CountFullsepctrum=0;;
-    double HILooseTrackAll=0, HILooseTrackSelection=0;
+    double TrackAll=0, TrackSelection=0;
     int MaxBin=size(Centrality);
     for(int bin=0; bin<size(Centrality);bin++) if(Centrality[bin]<FcalBoundary) { MaxBin=bin; break;}
     while(tree_reader.Next()){
         //if(eventID>1000) break;
-        if (eventID % 1000 == 0) {
+        if (eventID % 100 == 0) {
             cout << Form("\rDone: %.2f", (100.0 * eventID / total_events)) <<"%   "<< flush;
         }
         eventID++;
-        //cout<<Trigger[0]<<endl;
-        //if(Trigger[0]<=0) continue;
-        int NumberOfTracks=0;
-        for(int track=0; track<NTracks[0]; track++) if(abs(TrackEta[track])<0.5 && TrackQuality[track][0]) NumberOfTracks++; // && abs(TrackD0[track])<1.5 && abs((TrackZ0[track])*sin(TrackTheta[track]))<1.5
-        //if(eventID<100) cout<<NumberOfTracks<<endl;
-        //if(FCAL[0] > (0.005 * NumberOfTracks + 0.1)) continue;
-        //if(NumberOfTracks<5) continue;
-
-        Tracks_withPileUp_hist->Fill(NumberOfTracks);
-        Tracks_withPileUp_histvsFCAL->Fill(NumberOfTracks,FCAL[0]);
 
         
+
         //Vertex Cut
         vector<pair<double, int>> vertexOrder;
         vertexOrder.reserve(Nvertex[0]);
         if(Nvertex[0]==0) continue;
-        //if(Nvertex[0]>2) continue;
-
         if(abs(ZVertex[0]) > 150) continue; 
-
         for (int vertex = 0; vertex < Nvertex[0]; vertex++)
         {
             vertexOrder.push_back({ZVertexVar[vertex], vertex});
@@ -114,22 +115,25 @@ void AnalOO()
         sort(vertexOrder.begin(), vertexOrder.end());
         int NumberOfVertex = 1;
         for (size_t i = 1; i < vertexOrder.size(); i++) if(vertexOrder[i].first < 0.02) NumberOfVertex++;
-
         if (NumberOfVertex != 1) continue;
-        
         if(!MB_topo_flag[0]) continue;
+        if(FCAL[0]<0.020983) continue;
 
-        //if(LumiBlock[0]<1100) continue;
-        
-        if(FCAL[0]<0.020215) continue;
+        double NumberOfTracks=0;
+        for(int track=0; track<NTracks[0]; track++){   
+            double pT=abs(TrackPt[track]);
+            int bin = h_eff->FindBin(pT);
+            double eff = h_eff->GetBinContent(bin);
+            if(abs(TrackEta[track])<0.5 && pT>0.31 && TrackQuality[track][1]&& std::abs(TrackD0[track]) < pt_dep_d0_func->Eval(pT) && eff>0)
+            {
+                NumberOfTracks+= 1.0/eff;
+            }
+        } 
 
 
         FCAL_hist->Fill(FCAL[0]);
-        double extrapolation=0;
-        if(FCAL[0]<37.123) extrapolation=1.55;
-        else extrapolation=1.4;
         CountFullsepctrum++;
-        HILooseTrackAll+=NumberOfTracks*extrapolation;
+        TrackAll+=NumberOfTracks;
         Tracks_fullspectrum_hist->Fill(NumberOfTracks);
 
         ZDC_CSide_hist->Fill(ZDC_CSide[0]);
@@ -143,8 +147,9 @@ void AnalOO()
 
             if(FCAL[0]>FcalBoundary)
             {
-                HILooseTrackSelection+=NumberOfTracks*1.4;  
+                TrackSelection+=NumberOfTracks;  
                 Tracks_selectedspectrum_hist->Fill(NumberOfTracks);
+                EventPassed++;
 
 
                 for(int bin=0; bin<MaxBin;bin++)
@@ -155,7 +160,6 @@ void AnalOO()
                         if(bin<10) Scaling[bin]++;
                         else if(bin<15) Scaling[10]++;
                         else if(bin<20) Scaling[11]++;
-                        EventPassed++;
                         break;
                     }
                 }
@@ -189,21 +193,20 @@ void AnalOO()
     cout<<"Average Collisions: "<<AverageCollisions<< " +/- " << AverageCollisionsDelta <<endl;
     cout<<"Average TAA: "<<AverageTAA<< " +/- " << AverageTAADelta <<endl;
 
-    double TrackEfficiency=1;
-    //double EtaCut= 0.21; //abs(eta)<0.5
     double FullSpectrumNparicipates=12.5;
 
-    double All_mean_dn_deta = (HILooseTrackAll) / (CountFullsepctrum*TrackEfficiency); 
-    double final_value_All = All_mean_dn_deta / FullSpectrumNparicipates;
+    double All_mean_dn_deta = (TrackAll) / (CountFullsepctrum); 
 
-    double Selection_mean_dn_deta = (HILooseTrackSelection) / (EventPassed*TrackEfficiency); 
-    double final_value_Seletion = Selection_mean_dn_deta / (AverageParticipates);
+    double final_value_All = All_mean_dn_deta*1.5 / FullSpectrumNparicipates;
+
+    double Selection_mean_dn_deta = (TrackSelection) / (EventPassed); 
+    double final_value_Seletion = Selection_mean_dn_deta*1.44 / (AverageParticipates);
 
     cout<<"Full spectrum N tracks: "<< final_value_All<<" with "<<FullSpectrumNparicipates<<endl;
     cout<<"Selection spectrum N tracks: "<<final_value_Seletion <<" with "<<AverageParticipates<<endl;
     cout<<"Ratio of tracks: "<<final_value_Seletion/final_value_All<<endl;
 
-    // cout<<"Full spectrum N tracks: "<<HILooseTrackAll <<" Selected spectrum N tracks: "<<HILooseTrackSelection<<endl;
+    // cout<<"Full spectrum N tracks: "<<TrackAll <<" Selected spectrum N tracks: "<<TrackSelection<<endl;
     Output->cd();
     ZDC_CSide_hist->Write();
     ZDC_ASide_hist->Write();

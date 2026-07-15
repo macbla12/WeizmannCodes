@@ -1,12 +1,13 @@
 void ReproducePlotAnal()
 {
 
-    double FcalBoundary=0.200;
     
     TString File ="Files/dataOOwithTracks.root"; 
     double Centrality[]={299.736, 277.788, 262.923, 251.217, 241.358, 204.217,176.384,153.033, 132.738,  114.885, 99.082, 85.128, 72.841, 62.061, 52.594,  44.348, 37.123, 30.774, 25.169, 20.215};
 
     double Nparticipates[]={27.88, 26.96, 26.37, 25.86, 25.39, 24.04, 21.80, 19.52, 17.29, 15.22, 13.34, 11.64, 10.11, 8.75, 7.54, 6.47, 5.52, 4.72, 4.04, 3.50};
+    double TAA[]={0.6750, 0.6255, 0.5981, 0.5761, 0.5567, 0.5066, 0.4314, 0.3633, 0.3030, 0.2516, 0.2082, 0.1719, 0.1415, 0.1162, 0.0953, 0.0780, 0.0636, 0.0518, 0.0424, 0.0350};
+
     double Extrapolation[]={1.364, 1.358, 1.359, 1.367, 1.370, 1.361, 1.379, 1.375, 1.400, 1.378, 1.381, 1.400, 1.398, 1.388, 1.403, 1.469, 1.536, 1.572, 1.611, 1.519};
 
     TFile *file = TFile::Open("Files/OO_eff005.root");
@@ -72,7 +73,7 @@ void ReproducePlotAnal()
     
     while(tree_reader.Next()){
         //if(eventID>1000) break;
-        if (eventID % 1000 == 0) {
+        if (eventID % 100 == 0) {
             cout << Form("\rDone: %.2f", (100.0 * eventID / total_events)) <<"%   "<< flush;
         }
         eventID++;
@@ -131,10 +132,15 @@ void ReproducePlotAnal()
     double TrackEfficiency=1;
     //double EtaCut= 0.21; //abs(eta)<0.5
     double FinalNumberOfTracksBin[20]={0.0};
+    double FinalTAANumberOfTracksBin[20]={0.0};
     for(int bin=0; bin<20;bin++)
     {
         FinalNumberOfTracksBin[bin]= NumberOfTracksBins[bin]*(Extrapolation[bin]*1.09)/(NumberOfEventsBins[bin]*Nparticipates[bin]);
-        //cout<<bin+1<<" Bin: 1/<Npart>dn/deta="<<FinalNumberOfTracksBin[bin]<<endl;
+
+        FinalTAANumberOfTracksBin[bin]= NumberOfTracksBins[bin]*(Extrapolation[bin]*1.09)/(NumberOfEventsBins[bin]*TAA[bin]);
+        cout<<bin+1<<" Bin: N particles "<<Nparticipates[bin]<<" 1/<Npart>dn/deta="<<FinalNumberOfTracksBin[bin]<<endl;
+
+
     }
 
     TH1D *TracksPtAfterEff = (TH1D*)TracksPtBeforeEff->Clone("TracksPtAfterEff");
@@ -152,27 +158,23 @@ void ReproducePlotAnal()
     TracksPtAfterEff_ZDCcut->Scale(1/CountsZDC);
 
     TGraph *graph = new TGraph(20, Nparticipates, FinalNumberOfTracksBin);
-    
-    graph->SetMarkerStyle(20);        
-    graph->SetMarkerSize(1.2);       
-    graph->SetMarkerColor(kRed);  
-    graph->SetLineColor(kRed);    
     graph->SetName("g_Tracks_vs_Npart");
-    graph->SetTitle(";<N_{part}>;<1/<N_{part}> dn/d#eta>");
-    TCanvas *c1 = new TCanvas("c1", "Canvas", 800, 600);
-    graph->GetYaxis()->SetRangeUser(0, 8);
-    graph->GetXaxis()->SetLimits(0.0, 36.0);
 
-    graph->Draw("APL"); 
 
-    c1->SaveAs("Plots/Tracks_vs_Npart.pdf");
+    TGraph *graphTAA = new TGraph(20, TAA, FinalTAANumberOfTracksBin);
+    graphTAA->SetName("g_Tracks_vs_TAA");
+
+
     Output->cd();
     graph->Write(); 
+    graphTAA->Write(); 
     TracksPtBeforeEff->Write();
     TracksPtAfterEff->Write();
     TracksPtBeforeEff_ZDCcut->Write();
     TracksPtAfterEff_ZDCcut->Write();
     Output->Close();
+
+
     cout<<"============================="<<endl;
 
 }
