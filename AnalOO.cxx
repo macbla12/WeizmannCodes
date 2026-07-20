@@ -197,10 +197,10 @@ void AnalOO()
 
     double All_mean_dn_deta = (TrackAll) / (CountFullsepctrum); 
 
-    double final_value_All = All_mean_dn_deta*1.5 / FullSpectrumNparicipates;
+    double final_value_All = All_mean_dn_deta*1.55 / FullSpectrumNparicipates;
 
     double Selection_mean_dn_deta = (TrackSelection) / (EventPassed); 
-    double final_value_Seletion = Selection_mean_dn_deta*1.44 / (AverageParticipates);
+    double final_value_Seletion = Selection_mean_dn_deta*1.47 / (AverageParticipates);
 
     cout<<"Full spectrum N tracks: "<< final_value_All<<" with "<<FullSpectrumNparicipates<<endl;
     cout<<"Selection spectrum N tracks: "<<final_value_Seletion <<" with "<<AverageParticipates<<endl;

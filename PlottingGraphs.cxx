@@ -8,7 +8,7 @@ void PlottingGraphs()
     graph->SetMarkerSize(1.2);       
     graph->SetMarkerColor(kBlue);  
     graph->SetLineColor(kBlue);    
-    graph->SetTitle(";<N_{part}>;<1/<N_{part}> dn/d#eta>");
+    graph->SetTitle(";<N_{part}>;<1/<N_{part}> dn/d#eta");
     TCanvas *c1 = new TCanvas("c1", "Canvas", 800, 600);
     graph->GetYaxis()->SetRangeUser(0, 8);
     graph->GetXaxis()->SetLimits(0.0, 36.0);
@@ -25,7 +25,7 @@ void PlottingGraphs()
     graphTAA->SetLineColor(kBlack);    
     graphTAA->SetTitle(";<T_{AA}>;<1/<T_{AA}> dn/d#eta>");
     TCanvas *c2 = new TCanvas("c2", "Canvas", 800, 600);
-    graphTAA->GetYaxis()->SetRangeUser(0, 800);
+    graphTAA->GetYaxis()->SetRangeUser(0, 50);
     c2->SetGrid();
     graphTAA->GetXaxis()->SetLimits(0.0, 0.7);
     graphTAA->Draw("APL");

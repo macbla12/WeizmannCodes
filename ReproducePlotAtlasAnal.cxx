@@ -1,4 +1,4 @@
-void ReproducePlotAnal()
+void ReproducePlotAtlasAnal()
 {
 
     
@@ -135,13 +135,75 @@ void ReproducePlotAnal()
     double FinalTAANumberOfTracksBin[20]={0.0};
     for(int bin=0; bin<20;bin++)
     {
-        FinalNumberOfTracksBin[bin]= NumberOfTracksBins[bin]*(Extrapolation[bin]*1.09)/(NumberOfEventsBins[bin]*Nparticipates[bin]);
+        FinalNumberOfTracksBin[bin]= NumberOfTracksBins[bin]*(Extrapolation[bin]*1.083)/(NumberOfEventsBins[bin]*Nparticipates[bin]);
 
-        FinalTAANumberOfTracksBin[bin]= NumberOfTracksBins[bin]*(Extrapolation[bin]*1.09)/(NumberOfEventsBins[bin]*TAA[bin]);
+        FinalTAANumberOfTracksBin[bin]= NumberOfTracksBins[bin]*(Extrapolation[bin]*1.083)/(NumberOfEventsBins[bin]*TAA[bin]);
         cout<<bin+1<<" Bin: N particles "<<Nparticipates[bin]<<" 1/<Npart>dn/deta="<<FinalNumberOfTracksBin[bin]<<endl;
 
 
     }
+
+
+    double sumTracks_0_5 = 0, sumEvents_0_5 = 0;
+    double sumNpart_weighted_0_5 = 0, sumExtrap_weighted_0_5 = 0;
+
+    for(int bin=0; bin<5; bin++)
+    {
+        sumTracks_0_5 += NumberOfTracksBins[bin];
+        sumEvents_0_5 += NumberOfEventsBins[bin];
+        sumNpart_weighted_0_5  += Nparticipates[bin]  * NumberOfEventsBins[bin];
+        sumExtrap_weighted_0_5 += Extrapolation[bin]  * NumberOfEventsBins[bin];
+    }
+
+    double Npart_0_5  = sumNpart_weighted_0_5  / sumEvents_0_5;
+    double Extrap_0_5 = sumExtrap_weighted_0_5 / sumEvents_0_5;
+
+    double FinalValue_0_5 = sumTracks_0_5 * (Extrap_0_5 * 1.083) / (sumEvents_0_5 * Npart_0_5);
+    cout << "Extrapolation in 0-5% ="<<Extrap_0_5<<endl;
+
+    cout << "0-5%: Npart=" << Npart_0_5 << " 1/<Npart>dn/deta=" << FinalValue_0_5 <<"  dn/deta="<<FinalValue_0_5*Npart_0_5<<endl;
+
+    double sumTracks_0_10 = 0, sumEvents_0_10 = 0;
+    double sumNpart_weighted_0_10 = 0, sumExtrap_weighted_0_10 = 0;
+
+    for(int bin=0; bin<6; bin++)
+    {
+        sumTracks_0_10 += NumberOfTracksBins[bin];
+        sumEvents_0_10 += NumberOfEventsBins[bin];
+        sumNpart_weighted_0_10  += Nparticipates[bin]  * NumberOfEventsBins[bin];
+        sumExtrap_weighted_0_10 += Extrapolation[bin]  * NumberOfEventsBins[bin];
+    }
+
+    double Npart_0_10  = sumNpart_weighted_0_10  / sumEvents_0_10;
+    double Extrap_0_10 = sumExtrap_weighted_0_10 / sumEvents_0_10;
+
+    double FinalValue_0_10 = sumTracks_0_10 * (Extrap_0_10 * 1.083) / (sumEvents_0_10);// * Npart_0_10);
+    cout << "Extrapolation in 0-10% ="<<Extrap_0_10* 1.083<<endl;
+
+    cout << "0-10%: Npart=" << Npart_0_10 << " 1/<Npart>dn/deta=" << FinalValue_0_10 <<"  dn/deta="<<FinalValue_0_10*Npart_0_10<<endl;
+
+    double sumTracks_0_80 = 0, sumEvents_0_80 = 0;
+    double sumNpart_weighted_0_80 = 0, sumExtrap_weighted_0_80 = 0;
+
+    for(int bin=0; bin<20; bin++)
+    {
+        sumTracks_0_80 += NumberOfTracksBins[bin];
+        sumEvents_0_80 += NumberOfEventsBins[bin];
+        sumNpart_weighted_0_80  += Nparticipates[bin]  * NumberOfEventsBins[bin];
+        sumExtrap_weighted_0_80 += Extrapolation[bin]  * NumberOfEventsBins[bin];
+    }
+
+    double Npart_0_80  = sumNpart_weighted_0_80  / sumEvents_0_80;
+    double Extrap_0_80 = sumExtrap_weighted_0_80 / sumEvents_0_80;
+
+    double FinalValue_0_80 = sumTracks_0_80 * (Extrap_0_80 * 1.083) / (sumEvents_0_80);// * Npart_0_80);
+    cout << "Extrapolation in 0-80% ="<<Extrap_0_80* 1.083<<endl;
+
+    cout << "0-80%: Npart=" << Npart_0_80 << " 1/<Npart>dn/deta=" << FinalValue_0_80 <<"  dn/deta="<<FinalValue_0_80*Npart_0_80<<endl;
+
+    cout<<"Ratio: "<<FinalValue_0_10/FinalValue_0_80<<endl;
+
+
 
     TH1D *TracksPtAfterEff = (TH1D*)TracksPtBeforeEff->Clone("TracksPtAfterEff");
     TracksPtAfterEff->SetTitle("TracksPtAfterEff"); 
@@ -151,11 +213,13 @@ void ReproducePlotAnal()
 
     TracksPtAfterEff->Divide(h_eff);
     TracksPtAfterEff_ZDCcut->Divide(h_eff);
-    cout<<Counts10procent<<endl;
+    //cout<<Counts10procent<<endl;
     TracksPtBeforeEff->Scale(1/Counts10procent);
     TracksPtAfterEff->Scale(1/Counts10procent);
     TracksPtBeforeEff_ZDCcut->Scale(1/CountsZDC);
     TracksPtAfterEff_ZDCcut->Scale(1/CountsZDC);
+
+
 
     TGraph *graph = new TGraph(20, Nparticipates, FinalNumberOfTracksBin);
     graph->SetName("g_Tracks_vs_Npart");
