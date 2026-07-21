@@ -41,6 +41,8 @@ void FCALtest()
     TH1D* NelemHist = new TH1D("Nelem","Nelem",30,0,30); 
     TH1D* SumETHist = new TH1D("SumET","SumET",100,0,500);
     TH1D* GammaHist = new TH1D("GammaHist","GammaHist",50,0,60);
+    TH2D* NpartvsNcollHist = new TH2D("NpartvsNcollHist","NpartvsNcollHist;Npart;Ncoll",50,0,60,50,0,60);
+
     TH2D* FCALoverNpartvsNpartHist = new TH2D("FCALoverNpartvsNpartHist","FCaLoverNpartvsNpartHist",35,-.5,34.5,100,0,60);
     TH2D* NpartvsCentralityHist = new TH2D("NpartvsCentralityHist","NpartvsCentralityHist",100,0,150,35,-.5,34.5);
     TH2D* FCALvsCentralityHist = new TH2D("FCALvsCentralityHist","FCALvsCentralityHist",100,0,150,100,0,500);
@@ -65,19 +67,25 @@ void FCALtest()
 
     while(tree_reader.Next()){
         Events++;
-        NcollHist->Fill(Ncoll[0]);
-        NpartHist->Fill(Npart[0]);
+        //NcollHist->Fill(Ncoll[0]);
+        NpartvsNcollHist->Fill(Npart[0],Ncoll[0]);
+        
 
         double x=0.11;
         double Nelem=x*Ncoll[0]+(1-x)*Npart[0]/2;
         NelemHist->Fill(Nelem);
         GammaHist->Fill(SampleGamma(k_pp, theta_pp));
-
         double ET = SampleGamma(k_oo*Nelem, theta_oo);
 
         ET += gRandom->Gaus(0, sigma_noise);
         SumETHist->Fill(ET);
-        if(ET>20.215) FCALoverNpartvsNpartHist->Fill(Npart[0],ET/Npart[0]);
+
+        if(ET>20.215){
+            NcollHist->Fill(Ncoll[0]);
+            NpartHist->Fill(Npart[0]);
+        } 
+
+         FCALoverNpartvsNpartHist->Fill(Npart[0],ET/Npart[0]);
         double centrality=(ImpPara[0]*ImpPara[0]);
         
         if(ET<20.215) //80%-60% 
@@ -106,7 +114,9 @@ void FCALtest()
     }
     TProfile *profFCALoverNpart = FCALoverNpartvsNpartHist->ProfileX("profFCALoverNpart");
     TProfile *profCentralityvsNpartHist = NpartvsCentralityHist->ProfileX("profCentralityvsNpartHist");
-
+    TProfile *profNpartvsNcollHist = NpartvsNcollHist->ProfileX("profNpartvsNcollHist");
+    TF1 *fitNpartvsNcollHist = ("NpartvsNcollHist","[0]+x*[1]",10,0,60);
+    fitNpartvsNcollHist->Fit(NpartvsNcollHist);
     NcollHist->Write();
     NpartHist->Write();
     NelemHist->Write();
@@ -118,6 +128,8 @@ void FCALtest()
     Ncoll2040CentralityHist->Write();
     Ncoll0020CentralityHist->Write();
     FCALoverNpartvsNpartHist->Write();
+    NpartvsNcollHist->Write();
+    profNpartvsNcollHist->Write();
     profFCALoverNpart->Write();
     NpartvsCentralityHist->Write();
     profCentralityvsNpartHist->Write();

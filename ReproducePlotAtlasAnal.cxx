@@ -62,6 +62,17 @@ void ReproducePlotAtlasAnal()
         else FCAL_Bining->GetXaxis()->SetBinLabel(i - 4, Form("%d-%d %%", i*5, (i + 1)*5));
     }
 
+    TH1D *FCAL0n0noverFCALmb =new TH1D("FCAL0n0noverFCALmb","FCAL0n0noverFCALmb",100,0,0.6);
+    TH1D *FCAL1n0noverFCALmb =new TH1D("FCAL1n0noverFCALmb","FCAL1n0noverFCALmb",100,0,0.6);
+    TH1D *FCAL1n1noverFCALmb =new TH1D("FCAL1n1noverFCALmb","FCAL1n1noverFCALmb",100,0,0.6);
+
+    TH1D *ZDC_hist =new TH1D("ZDC_hist","ZDC_ASide",100,0,0.01);
+    TH1D *ZDC_centrality1pr =new TH1D("ZDC_centrality1pr","ZDC_centrality1pr",100,0,0.01);
+    TH1D *ZDC_centrality10pr =new TH1D("ZDC_centrality10pr","ZDC_centrality10pr",100,0,0.01);
+
+
+
+
     Long64_t total_events = mychain->GetEntries();
     cout<<"============================="<<endl;
     cout<<"Starting Analysis"<<endl;
@@ -110,18 +121,33 @@ void ReproducePlotAtlasAnal()
                 if(FCAL[0]*1000>160){ if(ZDC_CSide[0]<0.001 && ZDC_ASide[0]<0.001) TracksPtBeforeEff_ZDCcut->Fill(pT);}
             }
         } 
-
+        ZDC_hist->Fill(ZDC_CSide[0]);
         for(int bin=0; bin<20;bin++)
         {
             if(FCAL[0]*1000>Centrality[bin]) 
             {
+                if(bin==0) ZDC_centrality1pr->Fill(ZDC_CSide[0]);
+                if(bin<6) ZDC_centrality10pr->Fill(ZDC_CSide[0]);
+
                 FCAL_Bining->Fill(bin,1);
                 NumberOfTracksBins[bin]+=NumberOfTracks;
                 NumberOfEventsBins[bin]++;
                 break;
             }
         }
-        
+
+        if(ZDC_CSide[0]<0.001 && ZDC_ASide[0]<0.001)
+        {
+            FCAL0n0noverFCALmb->Fill(FCAL[0]);
+        }
+        if(((ZDC_CSide[0]>0.001 && ZDC_CSide[0]<0.004) && ZDC_ASide[0]<0.001) || ((ZDC_ASide[0]>0.001 && ZDC_ASide[0]<0.004) && ZDC_CSide[0]<0.001))
+        {
+            FCAL1n0noverFCALmb->Fill(FCAL[0]);
+        }
+        if((ZDC_CSide[0]>0.001 && ZDC_CSide[0]<0.004) && (ZDC_ASide[0]>0.001 && ZDC_ASide[0]<0.004))
+        {
+            FCAL1n1noverFCALmb->Fill(FCAL[0]);
+        }
         
 
     }
@@ -177,7 +203,7 @@ void ReproducePlotAtlasAnal()
     double Npart_0_10  = sumNpart_weighted_0_10  / sumEvents_0_10;
     double Extrap_0_10 = sumExtrap_weighted_0_10 / sumEvents_0_10;
 
-    double FinalValue_0_10 = sumTracks_0_10 * (Extrap_0_10 * 1.083) / (sumEvents_0_10);// * Npart_0_10);
+    double FinalValue_0_10 = sumTracks_0_10 * (Extrap_0_10 * 1.083) / (sumEvents_0_10 * Npart_0_10);
     cout << "Extrapolation in 0-10% ="<<Extrap_0_10* 1.083<<endl;
 
     cout << "0-10%: Npart=" << Npart_0_10 << " 1/<Npart>dn/deta=" << FinalValue_0_10 <<"  dn/deta="<<FinalValue_0_10*Npart_0_10<<endl;
@@ -196,7 +222,7 @@ void ReproducePlotAtlasAnal()
     double Npart_0_80  = sumNpart_weighted_0_80  / sumEvents_0_80;
     double Extrap_0_80 = sumExtrap_weighted_0_80 / sumEvents_0_80;
 
-    double FinalValue_0_80 = sumTracks_0_80 * (Extrap_0_80 * 1.083) / (sumEvents_0_80);// * Npart_0_80);
+    double FinalValue_0_80 = sumTracks_0_80 * (Extrap_0_80 * 1.083) / (sumEvents_0_80 * Npart_0_80);
     cout << "Extrapolation in 0-80% ="<<Extrap_0_80* 1.083<<endl;
 
     cout << "0-80%: Npart=" << Npart_0_80 << " 1/<Npart>dn/deta=" << FinalValue_0_80 <<"  dn/deta="<<FinalValue_0_80*Npart_0_80<<endl;
@@ -228,14 +254,25 @@ void ReproducePlotAtlasAnal()
     TGraph *graphTAA = new TGraph(20, TAA, FinalTAANumberOfTracksBin);
     graphTAA->SetName("g_Tracks_vs_TAA");
 
-
     Output->cd();
+    
     graph->Write(); 
     graphTAA->Write(); 
+    
     TracksPtBeforeEff->Write();
     TracksPtAfterEff->Write();
     TracksPtBeforeEff_ZDCcut->Write();
     TracksPtAfterEff_ZDCcut->Write();
+    
+    FCAL_hist->Write();
+    FCAL0n0noverFCALmb->Write();
+    FCAL1n0noverFCALmb->Write();
+    FCAL1n1noverFCALmb->Write();
+
+    ZDC_hist->Write();
+    ZDC_centrality1pr->Write();
+    ZDC_centrality10pr->Write();
+
     Output->Close();
 
 
