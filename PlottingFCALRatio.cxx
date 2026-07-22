@@ -3,7 +3,7 @@ void PlottingFCALRatio(){
     gStyle->SetOptStat(000000);
     
     // 1. Otwarcie pliku ROOT
-    TFile *DataFile = new TFile("Plots/ReproducedPlot.root", "READ");
+    TFile *DataFile = new TFile("Plots/ReproducedPlotHighStat.root", "READ");
     
     // Pobranie histogramów z pliku
     TH1D *h_FCAL      = (TH1D*)DataFile->Get("FCAL_hist");
@@ -34,14 +34,17 @@ void PlottingFCALRatio(){
     r_0n0n->SetLineWidth(2);
     r_0n0n->SetMinimum(0.0); // Opcjonalnie: zmień zakres osi Y
     r_0n0n->SetMaximum(1.2); 
+    r_0n0n->GetXaxis()->SetRangeUser(0,0.45);
     r_0n0n->Draw("HIST");
 
     r_1n0n->SetLineColor(kBlue);
     r_1n0n->SetLineWidth(2);
+    r_1n0n->GetXaxis()->SetRangeUser(0,0.45);
     r_1n0n->Draw("HIST SAME");
 
     r_1n1n->SetLineColor(kGreen+2);
     r_1n1n->SetLineWidth(2);
+    r_1n1n->GetXaxis()->SetRangeUser(0,0.45);
     r_1n1n->Draw("HIST SAME");
 
     // 4. Legenda

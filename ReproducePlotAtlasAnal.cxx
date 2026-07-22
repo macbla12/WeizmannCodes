@@ -144,7 +144,7 @@ void ReproducePlotAtlasAnal()
         {
             FCAL1n0noverFCALmb->Fill(FCAL[0]);
         }
-        if((ZDC_CSide[0]>0.001 && ZDC_CSide[0]<0.004) && (ZDC_ASide[0]>0.001 && ZDC_ASide[0]<0.004))
+        if(ZDC_CSide[0]>0.001 && ZDC_CSide[0]<0.004 && ZDC_ASide[0]>0.001 && ZDC_ASide[0]<0.004)
         {
             FCAL1n1noverFCALmb->Fill(FCAL[0]);
         }

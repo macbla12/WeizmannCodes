@@ -3,7 +3,7 @@ void PlottingZDCFCAL(){
     gStyle->SetOptStat(000000);
     
     // 1. Otwarcie pliku ROOT
-    TFile *DataFile = new TFile("Plots/ReproducedPlot.root", "READ");
+    TFile *DataFile = new TFile("Plots/ReproducedPlotHighStat.root", "READ");
     
     // Pobranie 3 histogramów ZDC z pliku
     TH1D *h_ZDC       = (TH1D*)DataFile->Get("ZDC_hist");
